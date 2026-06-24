@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Placement Dashboard 2025-26</title>
+
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-titles">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Placement Dashboard</h1>
+
+        <div style="background: var(--card); padding: 5px; border-radius: 8px; border: 1px solid var(--border); display: flex; gap: 5px;">
+          <button id="btn-2025" style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; background: var(--teal); color: white;">2025-26</button>
+          <button id="btn-2026" style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; background: transparent; color: var(--navy);">2026-27</button>
+        </div>
+      </div>
+    </div>
+    <span class="last-updated" id="last-updated">Connecting to local file...</span>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-dash">Dashboard</button>
+    <button class="tab-btn" data-tab="tab-mba">MBA Summary</button>
+    <button class="tab-btn" data-tab="tab-bba">BBA Summary</button>
+    <button class="tab-btn" data-tab="tab-eng">Engineering</button>
+    <button class="tab-btn" data-tab="tab-law">Law</button>
+    <button class="tab-btn" data-tab="tab-announce">Announcements</button>
+  </div>
+
+  <main class="main">
+
+    <section id="tab-dash" class="tab-panel active">
+      <h2 class="section-title">Overall Placement Cycle 2025-26</h2>
+      <div class="table-wrap" id="dash-table">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading summary data...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-mba" class="tab-panel">
+      <h2 class="section-title">MBA Placement Status</h2>
+      <div id="mba-filters" class="filter-container"></div>
+      <div class="table-wrap" id="mba-table">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <section id="tab-bba" class="tab-panel">
+      <h2 class="section-title">BBA/B.Com Placement Status</h2>
+      <div class="table-wrap" id="bba-table">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <section id="tab-eng" class="tab-panel">
+      <div id="eng-filters"></div>
+      <div class="table-wrap" id="eng-table">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <section id="tab-law" class="tab-panel">
+      <div class="table-wrap" id="law-table">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <section id="tab-announce" class="tab-panel">
+      <div id="announce-container">
+        <div class="loading-state"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Load in dependency order: config → helpers → parsers → renderers → filters → data → app -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/helpers.js"></script>
+  <script src="js/parsers.js"></script>
+  <script src="js/renderers.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
