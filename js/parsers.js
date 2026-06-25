@@ -2,6 +2,7 @@
 // js/parsers.js — Excel sheet data parsers
 // ===================================================
 
+
 // ── B.SCHOOL PARSER (MBA + BBA) ────────────────────
 function parseBSchool(rows) {
   const mbaData = [];
@@ -45,10 +46,19 @@ function parseBSchool(rows) {
 
       // Update cohort based on spec name
       if (!isBBA) {
-        if (upperSpec === 'TOTAL' || upperSpec.includes('OVERALL')) { /* Keep cohort */ }
-        else if (upperSpec.includes('ASCENT'))                                     { currentCohort = 'Ascent MBA'; }
-        else if (upperSpec.includes('MBA JAN'))                                     { currentCohort = 'MBA JAN'; }
-        else if (upperSpec.includes('MBA JULY') || upperSpec.includes('MBA JUL'))   { currentCohort = 'MBA JULY'; }
+        if (upperSpec === 'TOTAL' || upperSpec.includes('OVERALL')) { 
+          /* Keep cohort */ 
+        }
+        else if (upperSpec.includes('ASCENT')) { 
+          // Check the active year: 2025 gets "Aug", 2026 (and beyond) gets "JAN"
+          currentCohort = currentYear === '2025' ? 'Ascent MBA Aug' : 'Ascent MBA JAN'; 
+        }
+        else if (upperSpec.includes('MBA JAN')) { 
+          currentCohort = 'MBA JAN'; 
+        }
+        else if (upperSpec.includes('MBA JULY') || upperSpec.includes('MBA JUL')) { 
+          currentCohort = 'MBA JULY'; 
+        }
       }
 
       const rowData = {
@@ -71,7 +81,6 @@ function parseBSchool(rows) {
 
   return { mba: mbaData, bba: bbaData };
 }
-
 // ── ENGINEERING PARSER ─────────────────────────────
 function parseEngineering(rows) {
   const data = [];
@@ -110,10 +119,10 @@ function parseEngineering(rows) {
 
     if (isDataRow) {
       if (upperSpec === 'TOTAL')           { specName = 'Overall Engineering'; }
-      if (upperSpec === 'ASAC')            { specName = 'Overall ASAC';   currentCohort = 'ASAC'; }
-      if (upperSpec === 'ASAE')            { specName = 'Overall ASAE';   currentCohort = 'ASAE'; }
-      if (upperSpec.includes('M.TECH'))    { specName = 'Overall M.Tech'; currentCohort = 'M.Tech'; }
-      if (upperSpec.includes('M.SC'))      { specName = 'Overall M.Sc';   currentCohort = 'M.Sc'; }
+      if (upperSpec === 'ASAC')            { specName = 'B.Tech ASAC';   currentCohort = 'ASAC'; }
+      if (upperSpec === 'ASAE')            { specName = 'B.Tech ASAE';   currentCohort = 'ASAE'; }
+      if (upperSpec.includes('M.TECH'))    { specName = 'M.Tech';        currentCohort = 'M.Tech'; }
+      if (upperSpec.includes('M.SC'))      { specName = 'M.Sc';          currentCohort = 'M.Sc'; }
 
       data.push({
         cohort:        currentCohort,
