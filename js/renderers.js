@@ -3,14 +3,33 @@
 // ===================================================
 
 // ── DASHBOARD SUMMARY TABLE ────────────────────────
+// ── DASHBOARD SUMMARY TABLE ────────────────────────
 function renderDashboard(mba, bba, eng, law) {
   const m = mba.find(d => String(d.spec).toUpperCase() === 'TOTAL' || d.spec === 'Overall MBA') || mba[0] || {};
   const b = bba.find(d => String(d.spec).toUpperCase().includes('TOTAL') || d.spec === 'Overall BBA') || bba[0] || {};
   const e = eng.find(d => String(d.spec).toUpperCase() === 'TOTAL' || d.spec.includes('Overall Engineering')) || eng[0] || {};
   const l = law.find(d => String(d.spec).toUpperCase() === 'TOTAL' || d.spec === 'Overall Law') || law[0] || {};
 
+  // 1. Group the overall summaries into an array
+  const summaries = [
+    { title: 'MBA', data: m },
+    { title: 'BBA / B.Com', data: b },
+    { title: 'Engineering', data: e },
+    { title: 'Law', data: l }
+  ].filter(item => item.data && item.data.totalBatch !== undefined); // Remove any empty/missing data
+
+  const container = document.getElementById('dash-table');
+  if (!container) return;
+
+  if (summaries.length === 0) {
+    container.innerHTML = `<div class="error-state"><p>⚠️ No dashboard summary data found for ${currentYear}.</p></div>`;
+    return;
+  }
+
+  // 2. Sort the main programs in descending order of placement percentage
+  summaries.sort((a, b) => parseFloat(b.data.pct || 0) - parseFloat(a.data.pct || 0));
+
   const makeRow = (title, obj) => {
-    if (!obj || obj.totalBatch === undefined) return '';
     return `<tr>
       <td><strong>${title}</strong></td><td>${pctBadge(obj.pct)}</td>
       <td>${fmt(obj.totalBatch)}</td><td>${fmt(obj.totalReg)}</td>
@@ -20,14 +39,6 @@ function renderDashboard(mba, bba, eng, law) {
     </tr>`;
   };
 
-  const container = document.getElementById('dash-table');
-  if (!container) return;
-
-  if (!m.totalBatch && !b.totalBatch && !e.totalBatch && !l.totalBatch) {
-    container.innerHTML = `<div class="error-state"><p>⚠️ No dashboard summary data found for ${currentYear}.</p></div>`;
-    return;
-  }
-
   container.innerHTML = `
     <table>
       <thead><tr>
@@ -36,51 +47,104 @@ function renderDashboard(mba, bba, eng, law) {
         <th>Not Eligible</th><th>Opted Out</th><th>Blocked</th>
       </tr></thead>
       <tbody>
-        ${makeRow('MBA', m)}
-        ${makeRow('BBA / B.Com', b)}
-        ${makeRow('Engineering', e)}
-        ${makeRow('Law', l)}
+        ${summaries.map(s => makeRow(s.title, s.data)).join('')}
       </tbody>
     </table>`;
 }
 
-// ── GENERIC DATA TABLE ─────────────────────────────
+
 function renderTable(id, rows) {
   const el = document.getElementById(id);
   if (!el) return;
 
-  if (!rows || rows.length === 0) {
+  // 0. Filter out useless spreadsheet artifacts before rendering
+  const cleanRows = rows.filter(r => !String(r.spec).toUpperCase().includes('TOTAL OF JULY BATCH'));
+
+  if (!cleanRows || cleanRows.length === 0) {
     el.innerHTML = `<div class="error-state"><p>⚠️ No data found for ${currentYear}.</p></div>`;
     return;
   }
 
+  // Helper to identify top-level rows so they don't get mixed in with normal sorting
+  const isTotalRow = (spec) => {
+    const s = String(spec).toUpperCase();
+    return s.includes('TOTAL') || 
+           s.includes('OVERALL') || 
+           s.includes('ASAC') || 
+           s.includes('ASAE') || 
+           s.includes('M.TECH') || 
+           s.includes('M.SC') ||
+           s.includes('MBA JAN') ||
+           s.includes('MBA JULY') ||
+           s.includes('ASCENT');
+  };
+
+  // 1. Separate summary/total rows from regular specializations (using cleanRows)
+  const totalRows = cleanRows.filter(r => isTotalRow(r.spec));
+  const regularRows = cleanRows.filter(r => !isTotalRow(r.spec));
+
+  // 2. Sort rows in descending order of placement percentage
+  const sortByPct = (a, b) => parseFloat(b.pct || 0) - parseFloat(a.pct || 0);
+  
+  // Sort the normal specializations
+  regularRows.sort(sortByPct);
+
+  // Sort the top-level branches, but PIN the grand total to the very top
+  totalRows.sort((a, b) => {
+    const aName = String(a.spec).toUpperCase();
+    const bName = String(b.spec).toUpperCase();
+    const aIsGrand = aName.includes('OVERALL ENGINEERING') || aName === 'TOTAL' || aName === 'OVERALL MBA';
+    const bIsGrand = bName.includes('OVERALL ENGINEERING') || bName === 'TOTAL' || bName === 'OVERALL MBA';
+
+    if (aIsGrand && !bIsGrand) return -1; // Keep 'a' at the top
+    if (!aIsGrand && bIsGrand) return 1;  // Keep 'b' at the top
+    
+    // If neither (or both) are grand totals, sort by percentage
+    return parseFloat(b.pct || 0) - parseFloat(a.pct || 0);
+  });
+
+  // Combine back: Grand total -> Sorted Branches -> Sorted Specializations
+  const sortedRows = [...totalRows, ...regularRows];
+
+  // 3. Conditional configuration: Check if this is the MBA or Engineering Summary tab
+  const isSummaryTable = (id === 'mba-table' || id === 'eng-table');
+
   el.innerHTML = `
     <table>
-      <thead><tr>
-        <th>Program / Specialization</th><th>Placement %</th><th>Total Batch</th>
-        <th>Total Reg</th><th>Placed</th><th>Eligible - Not Placed</th>
-        <th>Not Eligible</th><th>Opted Out</th><th>Blocked</th>
-      </tr></thead>
-      <tbody>${rows.map((r, i) => `
-        <tr class="${
-          i === 0 ||
-          r.spec.toUpperCase().includes('TOTAL') ||
-          r.spec.toUpperCase().includes('OVERALL') ||
-          r.spec === 'ASAC' ||
-          r.spec === 'ASAE'
-            ? 'total-row' : ''
-        }">
-          <td>${r.spec}</td><td>${pctBadge(r.pct)}</td>
-          <td>${fmt(r.totalBatch)}</td><td>${fmt(r.totalReg)}</td>
-          <td>${fmt(r.placed)}</td><td>${fmt(r.eligNotPlaced)}</td>
-          <td>${fmt(r.notEligible)}</td><td>${fmt(r.optedOut)}</td>
+      <thead>
+        <tr>
+          <th>Program / Specialization</th>
+          <th>Placement %</th>
+          <th>Total Batch</th>
+          <th>Total Reg</th>
+          <th>Placed</th>
+          ${isSummaryTable ? '' : `
+          <th>Eligible - Not Placed</th>
+          <th>Not Eligible</th>
+          <th>Opted Out</th>
+          <th>Blocked</th>
+          `}
+        </tr>
+      </thead>
+      <tbody>${sortedRows.map((r) => {
+        return `
+        <tr class="${isTotalRow(r.spec) ? 'total-row' : ''}">
+          <td>${r.spec}</td>
+          <td>${pctBadge(r.pct)}</td>
+          <td>${fmt(r.totalBatch)}</td>
+          <td>${fmt(r.totalReg)}</td>
+          <td>${fmt(r.placed)}</td>
+          ${isSummaryTable ? '' : `
+          <td>${fmt(r.eligNotPlaced)}</td>
+          <td>${fmt(r.notEligible)}</td>
+          <td>${fmt(r.optedOut)}</td>
           <td>${fmt(r.blocked)}</td>
-        </tr>`).join('')}
+          `}
+        </tr>`;
+      }).join('')}
       </tbody>
     </table>`;
 }
-
-// ── ANNOUNCEMENTS TABLE ────────────────────────────
 function renderAnnouncementsTable(objs) {
   const container = document.getElementById('announce-table-container');
   if (!objs || objs.length === 0) {
