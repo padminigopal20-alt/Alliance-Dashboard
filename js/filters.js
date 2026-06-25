@@ -25,20 +25,37 @@ function initMBAFilters(mbaData) {
       </div>
     </div>`;
 
+  // Helper: Identifies if a row is a main program summary rather than a specialization
+  const isMainBranch = (specName) => {
+    const s = String(specName).toUpperCase();
+    return s.includes('TOTAL') || 
+           s.includes('MBA JAN') || 
+           s.includes('MBA JULY') || 
+           s.includes('ASCENT') ||
+           s.includes('OVERALL');
+  };
+
   const btns = container.querySelectorAll('.filter-btn');
   btns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       btns.forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
       const selected = e.target.dataset.cohort;
-      renderTable('mba-table', selected === 'Overall MBA'
-        ? globalMBAData
-        : globalMBAData.filter(d => d.cohort === selected)
-      );
+      
+      if (selected === 'Overall MBA') {
+        // Show ONLY the main branches (Total, MBA Jan, etc.) on the overall view
+        const mainBranchesOnly = globalMBAData.filter(d => isMainBranch(d.spec));
+        renderTable('mba-table', mainBranchesOnly);
+      } else {
+        // Show all standard specializations when a specific branch is clicked
+        renderTable('mba-table', globalMBAData.filter(d => d.cohort === selected));
+      }
     });
   });
 
-  renderTable('mba-table', globalMBAData);
+  // Initial load: Apply the "Overall MBA" main-branch-only filter by default
+  const initialData = globalMBAData.filter(d => isMainBranch(d.spec));
+  renderTable('mba-table', initialData);
 }
 
 // ── ENGINEERING FILTERS ────────────────────────────
@@ -64,20 +81,38 @@ function initEngFilters(engData) {
       </div>
     </div>`;
 
+  // Helper: Identifies if a row is a main engineering program summary
+  const isMainBranch = (specName) => {
+    const s = String(specName).toUpperCase();
+    return s.includes('OVERALL') || 
+           s.includes('TOTAL') || 
+           s.includes('ASAC') || 
+           s.includes('ASAE') ||
+           s.includes('M.TECH') ||
+           s.includes('M.SC');
+  };
+
   const btns = container.querySelectorAll('.filter-btn');
   btns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       btns.forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
       const selected = e.target.dataset.cohort;
-      renderTable('eng-table', selected === 'Overall Engineering'
-        ? globalEngData
-        : globalEngData.filter(d => d.cohort === selected)
-      );
+      
+      if (selected === 'Overall Engineering') {
+        // Show ONLY the main branches on the overall view
+        const mainBranchesOnly = globalEngData.filter(d => isMainBranch(d.spec));
+        renderTable('eng-table', mainBranchesOnly);
+      } else {
+        // Show standard specializations when a specific branch is clicked
+        renderTable('eng-table', globalEngData.filter(d => d.cohort === selected));
+      }
     });
   });
 
-  renderTable('eng-table', globalEngData);
+  // Initial load: Apply the "Overall Engineering" main-branch-only filter by default
+  const initialData = globalEngData.filter(d => isMainBranch(d.spec));
+  renderTable('eng-table', initialData);
 }
 
 // ── ANNOUNCEMENTS FILTERS ──────────────────────────
