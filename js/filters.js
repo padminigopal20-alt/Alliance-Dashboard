@@ -1,8 +1,4 @@
-// ===================================================
-// js/filters.js — Filter UI initialization
-// ===================================================
 
-// ── MBA FILTERS ────────────────────────────────────
 function initMBAFilters(mbaData) {
   globalMBAData = mbaData;
   const container = document.getElementById('mba-filters');
