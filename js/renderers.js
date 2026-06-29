@@ -107,7 +107,8 @@ function renderTable(id, rows) {
   const sortedRows = [...totalRows, ...regularRows];
 
   // 3. Conditional configuration: Check if this is the MBA or Engineering Summary tab
-  const isSummaryTable = (id === 'mba-table' || id === 'eng-table');
+  // const isSummaryTable = (id === 'mba-table' || id === 'eng-table');
+  const isSummaryTable = (id === 'mba-table');
 
   el.innerHTML = `
     <table>
