@@ -106,7 +106,7 @@ function renderTable(id, rows) {
   // Combine back: Grand total -> Sorted Branches -> Sorted Specializations
   const sortedRows = [...totalRows, ...regularRows];
 
-  // 3. Conditional configuration: Check if this is the MBA or Engineering Summary tab
+
   // const isSummaryTable = (id === 'mba-table' || id === 'eng-table');
   // const isSummaryTable = (id === 'mba-table');
   const isSummaryTable = false;
